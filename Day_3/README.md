@@ -6,8 +6,8 @@ This folder documents my hands-on laboratory exercises and research notes for Da
 
 ## 📁 Section Directory
 1. [Core Optimization Concepts](#1-core-optimization-concepts)
-2. [Combinational Optimization Labs (Labs 1-4)](#2-combinational-optimization-labs-labs-1-4)
-3. [Sequential Optimization Labs (Labs 5-6)](#3-sequential-optimization-labs-labs-5-6)
+2. [Combinational Optimization Labs (Labs 1-2)](#2-combinational-optimization-labs-labs-1-2)
+3. [Sequential Optimization Labs (Labs 3-4)](#3-sequential-optimization-labs-labs-3-4)
 4. [Day 3 Summary](#4-day-3-summary)
 
 ---
@@ -29,7 +29,7 @@ Constant propagation replaces runtime variables with pre-calculated static value
 
 ---
 
-## 2. Combinational Optimization Labs (Labs 1-4)
+## 2. Combinational Optimization Labs (Labs 1-2)
 
 ### 🔬 Lab 1: Behavioral Ternary Minimization (`opt_check`)
 This lab demonstrates how the compiler optimizes conditional branches when an explicit channel is hardwired to a zero logic state.
@@ -50,22 +50,7 @@ The truth table for this conditional logic matches a basic 2-input AND operation
 
 ---
 
-### 🔬 Lab 2 & 3: Constant High Multi-Level Optimization (`opt_check2`)
-These lab iterations evaluate synthesis behavior when a static high logical constant ($1$) forms an explicit conditional selection track.
-
-#### Source Verilog Logic
-```verilog
-module opt_check2 (input a , input b , output y);
-  assign y = a ? 1 : b;
-endmodule
-```
-
-#### Synthesis Performance Insight
-Evaluating the boolean combinations ($y = 1$ when $a=1$, and $y = b$ when $a=0$) maps to a standard logic OR relationship ($y = a + b$). The synthesis engine strips out intermediate switching gates and implements the entire module using a single standalone 2-input OR gate footprint to preserve layout space.
-
----
-
-### 🔬 Lab 4: Nested Ternary Expression Reduction (`opt_check4`)
+### 🔬 Lab 2: Nested Ternary Expression Reduction (`opt_check4`)
 This lab evaluates deep conditional nesting paths and checks how a synthesizer evaluates complex cross-variable dependencies.
 
 #### Source Verilog Logic
@@ -90,9 +75,9 @@ The diagram below shows the post-mapping hardware configuration processed by the
 
 ---
 
-## 3. Sequential Optimization Labs (Labs 5-6)
+## 3. Sequential Optimization Labs (Labs 3-4)
 
-### 🔬 Lab 5: Storage Register Constant Tracking (`dff_const1`)
+### 🔬 Lab 3: Storage Register Constant Tracking (`dff_const1`)
 This lab checks sequential optimization tracking when a storage register is hardwired to a constant data input line outside of its initialization state.
 
 #### Source Verilog Logic
@@ -120,12 +105,12 @@ Because the storage element continuously drives a constant high level ($1$) duri
 
 ---
 
-### 🔬 Lab 6: Redundant Sequential Element Elimination (`dff_const2`)
+### 🔬 Lab 4: Redundant Sequential Element Elimination (`dff_const4`)
 This lab examines an extreme sequential optimization scenario where the initialization track and data track drive identical state properties.
 
 #### Source Verilog Logic
 ```verilog
-module dff_const2(input clk, input reset, output reg q);
+module dff_const4(input clk, input reset, output reg q);
 always @(posedge clk, posedge reset)
 begin
 	if(reset)
@@ -139,18 +124,18 @@ endmodule
 #### Waveform Simulation Trace
 The functional timeline trace verifies that output line `q` stays locked at a logic-high value ($1$), showing no signal transitions regardless of active clock transitions or reset events:
 
-![GTKWave dff_const2 Timeline View](./dff_const2_waveform.png)
+![GTKWave dff_const4 Timeline View](./dff_const4_waveform.png)
 
 #### Synthesized Optimization Netlist
 Because the output value `q` remains a constant high ($1$) under every possible operational condition, the clock edge and the reset line have no effect on the circuit's state. The synthesis engine optimizes away the entire sequential cell and replaces it with a hardwired connection to VDD:
 
-![Synthesized dff_const2 Structural Layout](./dff_const2_netlist.png)
+![Synthesized dff_const4 Structural Layout](./dff_const4_netlist.png)
 
 *   **Optimization Efficiency:** By fully deleting the unneeded flip-flop primitive, the optimizer successfully minimizes silicon area and cuts dynamic switching power down to zero.
 
 ---
 
 ## 4. Day 3 Summary
-*   **Combinational Reduction:** Observed how Yosys simplifies ternary conditional operations down to fundamental logical gates (AND, OR, XNOR) by verifying functional equivalent paths.
-*   **Sequential Optimization:** Validated that flip-flops with fixed inputs can be optimized by the compiler. If a register's output remains identical during both reset and active operation (`dff_const2`), the flip-flop is completely eliminated and replaced with a hardwired connection.
+*   **Combinational Reduction:** Observed how Yosys simplifies ternary conditional operations down to fundamental logical gates (AND, XNOR) by verifying functional equivalent paths.
+*   **Sequential Optimization:** Validated that flip-flops with fixed inputs can be optimized by the compiler. If a register's output remains identical during both reset and active operation (`dff_const4`), the flip-flop is completely eliminated and replaced with a hardwired connection to VDD.
 *   **Design Tradeoffs:** Explored how advanced techniques like gate cloning, de-cloning, and register retiming allow designers to balance timing constraints against physical cell area boundaries.
