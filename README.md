@@ -22,5 +22,5 @@ Click on any day below to view my lab notes, source codes, terminal commands, an
 
 ---
 
-**Submitted By:** [Your Name]  
+**Submitted By:** SHEIK MEERAN S
 **Status:** Completed All Lectures & Labs  
