@@ -18,55 +18,19 @@ This folder documents my hands-on laboratory exercises for Day 1 of the workshop
 ## 1. Simulation Core Concepts
 
 ### What is a Simulator?
-A simulator is an Electronic Design Automation (EDA) software tool used to check if a digital circuit functions correctly before it is committed to physical manufacturing. It validates structural or behavioral logic by applying input stimulus and tracking output state responses over a linear time frame.
+A simulator is an Electronic Design Automation (EDA) software tool used to check if a digital circuit functions correctly before it is committed to physical manufacturing.
 
 *   **Our Simulator Tool:** Icarus Verilog (`iverilog`)
 
 ### Core Elements of the Test Environment
-*   **Design Module:** The functional Verilog RTL code containing the actual combinational or sequential digital logic. It contains explicit primary input and output ports.
-*   **Testbench Block:** A wrapper architecture used to test the design block. Unlike the design module, a testbench **contains no primary input or output ports**. It sets up a localized verification loop using two main blocks:
+*   **Design Module:** The functional Verilog RTL code containing the actual digital logic. It contains explicit primary input and output ports.
+*   **Testbench Block:** A wrapper architecture used to test the design block. A testbench **contains no primary input or output ports**. It sets up a localized verification loop using two main blocks:
     *   **Stimulus Generator:** Generates changing test patterns and feeds them directly into the inputs of the design under test.
     *   **Stimulus Observer:** Continuously reads, logs, and checks the resulting outputs against expected values.
 
-### Functional Interconnection Layout
-The block diagram below illustrates how the testbench environment wraps around the target design module to drive behavioral simulation:
-
-![Simulation Environment Block Diagram](./sim_block_diagram.png)
-
----
 
 ## 2. RTL Verification Pipeline
 
-The flow diagram below displays the sequential workflow mapping your hardware description language code down to a visual interactive trace:
-
-```text
-  +-----------------+      +--------------------+
-
-  |  Design Block   |      |  Testbench Wrapper |
-  |  (good_mux.v)   |      |   (tb_good_mux.v)  |
-  +--------+--------+      +---------+----------+
-
-           |                         |
-           +------------+------------+
-
-                        |
-                        v
-             +---------------------+
-             |    iverilog Engine  |
-             +----------+----------+
-
-                        |
-                        v
-             +---------------------+
-             |  Simulation Binary  | ----> [ Generates .vcd Waveform ]
-             +---------------------+
-
-                        |
-                        v
-             +---------------------+
-             |   GTKWave Analyzer  |
-             +---------------------+
-```
 
 *   The `iverilog` tool compiles the design module and testbench concurrently.
 *   Executing the compiled simulator binary outputs a value changes dump (`.vcd`) log tracking signal activity.
@@ -77,12 +41,9 @@ The flow diagram below displays the sequential workflow mapping your hardware de
 ## 3. Lab Experiment: 2-to-1 Multiplexer Verification
 
 ### Interactive Command Log
-Below is the clean log of terminal commands executed in the workspace directory to initialize environments, compile source files, and launch visualization windows:
-
 ```bash
 # Navigate to the target workshop lab project repository
-cd sky130RTLDesignAndSynthesisWorkshop
-cd verilog_files
+cd sky130RTLDesignAndSynthesisWorkshop/verilog_files
 
 # Compile the behavioral hardware model alongside its validation testbench
 iverilog good_mux.v tb_good_mux.v
@@ -120,7 +81,7 @@ endmodule
 ### Functional Logic Walkthrough
 *   The module defines three structural inputs (`i0`, `i1`, `sel`) and a single output (`y`) declared as a register type to support procedural assignments.
 *   The procedural block uses an always sensitivity list (`@ (*)`) that triggers whenever any input signal state changes.
-*   A conditional evaluation control statement determines output routing: when the selection control line `sel` evaluates to a logic-high state ($1$), input channel `i1` guides the output target `y`. When `sel` registers a logic-low state ($0$), the routing swaps, driving channel `i0` directly to output `y`.
+*   A conditional evaluation control statement determines output routing: when the selection control line `sel` evaluates to a logic-high state (1), input channel `i1` guides the output target `y`. When `sel` registers a logic-low state (0), the routing swaps, driving channel `i0` directly to output `y`.
 
 ---
 
@@ -168,25 +129,12 @@ Because the structural netlist maintains identical primary input and output inte
 Inside the terminal environment, the design is loaded, optimized, and mapped to the target foundry cell library:
 
 ```bash
-# Launch the Yosys synthesis environment
 yosys
-
-# Read the targeted SkyWater 130nm standard cell liberty model constraints
 read_liberty -lib ../lib/sky130_fd_sc_hd__tt_025C_1v80.lib
-
-# Read and process the primary behavioral design block
 read_verilog good_mux.v
-
-# Execute design compilation specifying top module targets
 synth -top good_mux
-
-# Map architectural components to specific target cell primitives
 abc -liberty ../lib/sky130_fd_sc_hd__tt_025C_1v80.lib
-
-# Clean up internal attributes and export the structural gate-level netlist file
 write_verilog -noattr good_mux_netlist.v
-
-# Generate a visual graph layout diagram representation of the mapped cells
 show -format svg -prefix ./mux_schematic
 ```
 
@@ -203,3 +151,19 @@ Before technology cell mapping, Yosys identifies the overall module requirements
 ### 2. Technology Mapping Results (Section 4.1.2)
 After executing the `abc` technology pass, the generic multiplexer is successfully transformed into a real, physically-manufacturable cell from the SkyWater 130nm library:
 *   **Target Standard Cell Used:** `sky130_fd_sc_hd__mux2_1` (Quantity: 1)
+*   **Internal Signals:** 0
+*   **Input Signals:** 3
+*   **Output Signals:** 1
+
+### Generated Netlist Schematic Graph
+Below is the synthesized circuit schematic generated via the `show` command, verifying a clean technology mapping with zero dangling wires or latch errors:
+
+![Generated Netlist Schematic Graph](./mux_schematic.png)
+
+---
+
+## 7. Day 1 Summary
+*   **Functional Verification:** Confirmed the logical design correctness of a 2-to-1 Multiplexer module (`good_mux.v`) using an `iverilog` simulation testbench environment and verified the runtime behavior timeline via `GTKWave`.
+*   **Logic Synthesis Flow:** Successfully utilized `Yosys` to process behavioral RTL code and technology-map it down into structural primitives.
+*   **Hardware Realization:** Verified that the generic compiler structure was successfully mapped to a high-density, low-power standard hardware cell (`sky130_fd_sc_hd__mux2_1`) inside the **SkyWater 130nm Open-Source PDK**.
+
