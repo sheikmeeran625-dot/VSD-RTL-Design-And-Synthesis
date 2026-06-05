@@ -166,7 +166,7 @@ dfflibmap -liberty ../lib/sky130_fd_sc_hd__tt_025C_1v80.lib
 abc -liberty ../lib/sky130_fd_sc_hd__tt_025C_1v80.lib
 
 # Render the compiled structural gate-level netlist schematic
-show
+show -format svg -prefix ./dff_asyncres__schematic
 ```
 
 ### Synthesized Gate Schematic Analysis
