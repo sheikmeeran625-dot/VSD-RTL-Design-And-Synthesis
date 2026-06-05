@@ -31,7 +31,7 @@ A simulator is an Electronic Design Automation (EDA) software tool used to check
 ### Functional Interconnection Layout
 The block diagram below illustrates how the testbench environment wraps around the target design module to drive behavioral simulation:
 
-![Simulation Environment Block Diagram](../sim_block_diagram.png)
+![Simulation Environment Block Diagram](./sim_block_diagram.png)
 
 ---
 
@@ -97,7 +97,7 @@ gtkwave tb_good_mux.vcd
 ### Captured Functional Waves
 Below is the verification trace showing functional matching across inputs and selection lines:
 
-![GTKWave Simulation Trace Output](../good_mux_waveform.png)
+![GTKWave Simulation Trace Output](./good_mux_waveform.png)
 
 ---
 
